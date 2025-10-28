@@ -1,5 +1,5 @@
 
-const validateUser = (req, res, next) => {
+const validateRegisterUser = (req, res, next) => {
 
 
     const { name, email, password } = req.body;
@@ -32,4 +32,5 @@ const validateUser = (req, res, next) => {
     next();
 }
 
-module.exports = validateUser;
+
+module.exports = validateRegisterUser;
