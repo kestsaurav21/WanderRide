@@ -4,18 +4,32 @@ const Vehicle = require('../models/vehicle');
 
 const addVehicle = async (req, res) => {
 
+    
+
     try {
 
     // 1️⃣ Validate required fields
 
-        const { name, type, brand, pricePerDay, available, imageUrls } = req.body;
+        const { name, type,registrationNumber, brand, pricePerDay, available, imageUrls } = req.body;
 
-        if (!name || !type || !brand || !pricePerDay) {
-            res.status(400).json({
+        if (!name || !type || !brand || !pricePerDay || !registrationNumber) {
+            return res.status(400).json({
                 success: false,
                 message: "Please fill all required fields.",
             });
         }
+
+
+    // check if the same registration number vehicle exist
+
+    const existingVehicle = await Vehicle.findOne({registrationNumber});
+
+    if(existingVehicle){
+        return res.status(400).json({
+            success: false,
+            message: "A vehicle with this registration number already exists.",
+        });
+    }
 
     // 2️⃣ Get the admin's ID from req.user (set by authMiddleware)
     
@@ -24,6 +38,7 @@ const addVehicle = async (req, res) => {
     const newVehicle = new Vehicle ({
         name,
         type,
+        registrationNumber,
         brand,
         pricePerDay,
         available,
@@ -40,6 +55,7 @@ const addVehicle = async (req, res) => {
             name: newVehicle.name,
             type: newVehicle.type,
             brand: newVehicle.brand,
+            registrationNumber: newVehicle.registrationNumber,
             createdBy: newVehicle.createdBy
         }
     })
