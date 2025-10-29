@@ -12,7 +12,11 @@ const vehicleSchema = new mongoose.Schema({
             required: true
 
         },
-
+        registrationNumber: { 
+            type: String, 
+            required: true, 
+            unique: true 
+        }, 
         brand: {
             type: String,
             required: true
