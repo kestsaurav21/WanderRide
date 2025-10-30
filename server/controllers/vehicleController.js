@@ -73,6 +73,51 @@ const addVehicle = async (req, res) => {
 
 }
 
+const getAllVehicle = async (req, res) => {
+
+    try {
+
+        const vehicles = await Vehicle.find().populate("createdBy", "name email role");
+
+        //check user role from token
+        //Admin -> show everything
+
+        if(req.user && req.user.role === "admin"){
+            return res.status(200).json({
+                success: true,
+                count: vehicles.length,
+                data: vehicles,
+            })
+        }else{
+            //User - show limited details of vehicle
+
+            const filteredVehicles = vehicles.map((v) => ({
+                _id: v._id,
+                name: v.name,
+                registrationNumber: v.registrationNumber,
+                category: v.category,
+                price: v.price,
+                imageUrls: v.imageUrls,
+            }))
+
+            return res.status(200).json({
+                success: true,
+                count: filteredVehicles.length,
+                data: filteredVehicles,
+            });
+        }
+
+        
+    } catch (error) {
+        console.error("Error fetching vehicles:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch vehicles",
+        });
+    }
+
+}
 
 
-module.exports = { addVehicle }
+
+module.exports = { addVehicle, getAllVehicle }
