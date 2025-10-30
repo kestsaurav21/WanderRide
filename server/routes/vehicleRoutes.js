@@ -3,7 +3,7 @@ const express = require("express");
 
 // Controllers
 
-const { addVehicle, getAllVehicle } = require("../controllers/vehicleController");
+const { addVehicle, getAllVehicle, updateVehicle } = require("../controllers/vehicleController");
 
 
 
@@ -23,5 +23,10 @@ router.post("/addVehicle", authMiddleware, adminMiddleware, addVehicle);
 
 //Get all vehicles (open for all logged-in users)
 router.get('/getAllVehicles', authMiddleware, getAllVehicle)
+
+//Update the vehicle(only admin)
+router.put('/updateVehicle/:id', authMiddleware, adminMiddleware, updateVehicle)
+
+
 
 module.exports = router;
