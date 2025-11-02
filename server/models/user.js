@@ -48,9 +48,11 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+// ✅ Match entered password with hashed one
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
 
 const User = mongoose.model("User", userSchema);
 
