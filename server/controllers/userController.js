@@ -41,4 +41,41 @@ const profile = async (req, res) => {
 };
 
 
-module.exports = { profile };
+const updateProfile = async (req, res) => {
+
+  try {
+    const allowedUpdates = ["name", "email"];
+    const updates = {};
+
+    allowedUpdates.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+
+    //update the user profile details
+
+    const updateUser = await User.findByIdAndUpdate(req.user.id, updates, {
+      new: true,
+    });
+
+    if (!updateUser) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: User ID missing from request token.",
+      });
+    }
+
+    res.status(200).json({
+        success: true,
+        user: updateUser,
+    });
+
+    
+  } catch (error) {
+    res.status(500).json({ error: "Server error", details: err.message });
+  }
+};
+
+
+module.exports = { profile, updateProfile };
