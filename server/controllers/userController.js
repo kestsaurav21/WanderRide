@@ -1,100 +1,44 @@
 const User = require("../models/user");
-const jwt = require('jsonwebtoken');
-const bcrypt = require("bcryptjs");
 
-const registerUser = async (req, res) => {
-  const { email, password, name } = req.body;
-
+const profile = async (req, res) => {
   try {
-    const existingUser = await User.findOne({ email });
+    const userId = req.user.id;
 
-    if (existingUser) {
-      return res.status(409).json({
-        message: "User already exists with this email",
-      });
-    }
-
-    //hash the password
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-    });
-
-    await newUser.save();
-
-    res.status(201).json({
-      message: "User register Successfully!!",
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        password: newUser.password,
-      },
-    });
-  } catch (error) {
-    console.error("❌ Error registering the user: ", error);
-    res.status(500).json({
-      message: "🔴 Server Error: Not able to register user!!",
-    });
-  }
-};
-
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    //check the user exists
-    const existingUser = await User.findOne({ email });
-
-    if (!existingUser) {
-      res.status(404).json({
+    if (!userId) {
+      return res.status(401).json({
         success: false,
-        message: "❌ User not found. Please register first.",
+        message: "User ID not found in token payload.",
       });
     }
-    //compare the entered password with hashpassword
-    const isMatch = await bcrypt.compare(password, existingUser.password);
-    if (!isMatch) {
+
+    //fetch user from database
+    const user = await User.findById(userId).select("-password");
+
+    //check is user exist
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: "🔴 Invalid credentials. Please try again.",
+        message: "User doesn't exist!",
       });
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: existingUser._id,
-        email: existingUser.email,
-        role: existingUser.role,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
-    );
-
-    //If password matches
+    //send user profile details in the response
 
     res.status(200).json({
       success: true,
-      message: "✅ Login successful!",
-      token,
-      user: {
-        id: existingUser._id,
-        name: existingUser.name,
-        email: existingUser.email,
-      },
+      user: user,
     });
   } catch (error) {
-    console.error("Error logging in:", error);
-    res.status(500).json({
+    // Log the error for debugging purposes
+    console.error("Profile fetch error:", error);
+
+    // Handle unexpected server errors (database connection issues, etc.)
+    return res.status(500).json({
       success: false,
-      message: "Server error. Please try again later.",
+      message: "An internal server error occurred while fetching the profile.",
     });
   }
 };
 
-module.exports = { registerUser, loginUser };
+
+module.exports = { profile };
