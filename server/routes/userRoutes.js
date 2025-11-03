@@ -5,7 +5,7 @@ const { profile, updateProfile} = require('../controllers/userController');
 const router = express.Router();
 
 router.get('/profile', isAuthenticated, profile);
-router.patch('profile', isAuthenticated, updateProfile);
+router.patch('/profile', isAuthenticated, updateProfile);
 
 
 
